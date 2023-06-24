@@ -1,12 +1,2 @@
-<div>
-  <h1>Chat App</h1>
-  <div>
-    <ul>
-      <li *ngFor="let message of messages">{{ message | json }}</li>
-    </ul>
-  </div>
-  <div>
-    <input [(ngModel)]="newMessage" placeholder="Type your message" (keyup.enter)="sendMessage()" />
-    <button (click)="sendMessage()">Send</button>
-  </div>
-</div>
+
+<app-chat></app-chat>
