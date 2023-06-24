@@ -14,6 +14,8 @@ export class ChatComponent {
   newMessage: string = '';
   connectionId!: string | null;
 
+  groupName!: string;
+
   connection!: signalR.HubConnection;
 
   constructor(private http: HttpClient) { }
@@ -29,14 +31,14 @@ export class ChatComponent {
         console.log('Mi connectionId:', connectionId);
 
         // Unirse al grupo "chatGroup"
-        this.connection.invoke('JoinGroup', 'chatGroup')
-          .catch(error => console.error(error));
+        
       })
       .catch(error => console.error(error));
 
     // Escuchar los mensajes entrantes
-    this.connection.on('ReceiveMessage', (message: string) => {
-      console.log('Recibido desde el backend:', message);
+    this.connection.on('ReceiveMessage', (messages: string[]) => {
+      console.log('Recibido desde el backend:', messages);
+      this.messages = messages;
     });
 
     // Cargar los mensajes existentes del grupo
@@ -47,15 +49,24 @@ export class ChatComponent {
 
   }
 
-  loadMessages() {
-    this.http.get<string[]>('https://localhost:7078/chat').subscribe((response) => {
-      this.messages = response;
-    });
+
+  connectGroup(){
+    this.connection.invoke('JoinGroup', this.groupName)
+        .then()
+        .catch(error => console.error(error));
   }
 
+
   sendMessage() {
-    this.connection.invoke('SendMessage', 'chatGroup', this.newMessage)
+    this.connection.invoke('SendMessage', this.groupName, this.newMessage)
       .then(() => this.newMessage = '')
+      .catch(error => console.error(error));
+  }
+
+
+  onDeleteGroupMessages() {
+    const groupName = this.groupName; // Reemplaza 'nombre-del-grupo' con el nombre de tu grupo
+    this.connection.invoke('DeleteGroupMessages', groupName)
       .catch(error => console.error(error));
   }
 }

@@ -1,5 +1,9 @@
 <div>
     <h1>Chat App</h1>
+    <button (click)="onDeleteGroupMessages()">Eliminar mensajes</button>
+
+    <input [(ngModel)]="groupName" placeholder="Nombre del grupo">
+    <button (click)="connectGroup()">Entrar al grupo</button>
     <div>
         <ul>
             <li *ngFor="let message of messages">{{ message | json }}</li>
