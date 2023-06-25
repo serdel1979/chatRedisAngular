@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as signalR from '@microsoft/signalr';
+import { ChatService } from '../services/chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -18,55 +19,49 @@ export class ChatComponent {
 
   connection!: signalR.HubConnection;
 
-  constructor(private http: HttpClient) { }
+  constructor(private chatService: ChatService) { }
 
   ngOnInit() {
-    this.connection = new signalR.HubConnectionBuilder()
-      .withUrl('https://localhost:7078/Hub/ChatHub')
-      .build();
-
-    this.connection.start()
+    this.chatService.startConnection()
       .then(() => {
-        const connectionId = this.connection.connectionId;
-        console.log('Mi connectionId:', connectionId);
-
-        // Unirse al grupo "chatGroup"
-        
+        this.chatService.getConnectionId()
+          .then(connectionId => {
+            console.log('Mi connectionId:', connectionId);
+          })
+          .catch(error => console.error(error));
       })
       .catch(error => console.error(error));
 
-    // Escuchar los mensajes entrantes
-    this.connection.on('ReceiveMessage', (messages: string[]) => {
-      console.log('Recibido desde el backend:', messages);
+    // Cargar los mensajes existentes del grupo
+    this.chatService.onLoadMessages((messages: string[]) => {
       this.messages = messages;
     });
 
-    // Cargar los mensajes existentes del grupo
-    this.connection.on('LoadMessages', (messages: string[]) => {
-      console.log('Cargando mensajes existentes:', messages);
+    this.chatService.onReceiveMessage((messages: string[]) => {
       this.messages = messages;
     });
 
   }
 
 
-  connectGroup(){
-    this.connection.invoke('JoinGroup', this.groupName)
-        .then()
-        .catch(error => console.error(error));
+  connectGroup() {
+    this.chatService.joinGroup(this.groupName)
+      .catch(error => console.error(error));
   }
 
 
   sendMessage() {
-    this.connection.invoke('SendMessage', this.groupName, this.newMessage)
-      .then(() => this.newMessage = '')
+    this.chatService.sendMessage(this.groupName, this.newMessage)
+      .then(() => {
+        this.newMessage = ''
+      })
       .catch(error => console.error(error));
   }
 
 
   onDeleteGroupMessages() {
-    const groupName = this.groupName; // Reemplaza 'nombre-del-grupo' con el nombre de tu grupo
-    this.connection.invoke('DeleteGroupMessages', groupName)
-      .catch(error => console.error(error));
+    this.chatService.deleteGroupMessages(this.groupName)
+      .then((msjs) => this.messages = msjs)
+      .catch((err) => console.error(err));
   }
 }
