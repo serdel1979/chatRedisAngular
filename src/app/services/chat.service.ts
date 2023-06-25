@@ -9,7 +9,26 @@ export class ChatService {
   private connection!: signalR.HubConnection;
   private connectionId!: string | null;
 
-  constructor() { }
+  groupName!: string;
+
+  constructor() {
+    this.startConnection()
+      .then(() => {
+        console.log('Conectado!!!');
+        this.joinGroup('musica')
+          .catch(error => console.error(error));
+      })
+      .catch((err) => console.error(err))
+
+    this.onLoadMessages((messages: string[]) => {
+      console.log(messages);
+    });
+
+    //carga los mensajes cuando llegan
+    this.onReceiveMessage((messages: string[]) => {
+      console.log(messages);
+    });
+  }
 
   startConnection(): Promise<void> {
     this.connection = new signalR.HubConnectionBuilder()
@@ -24,11 +43,12 @@ export class ChatService {
   }
 
   public joinGroup(groupName: string): Promise<string[]> {
+    this.groupName = groupName;
     return this.connection.invoke('JoinGroupChat', groupName);
   }
 
-  public sendMessage(groupName: string, message: string): Promise<string[]> {
-    return this.connection.invoke('SendMessageChat', groupName, message);
+  public sendMessage(message: string): Promise<string[]> {
+    return this.connection.invoke('SendMessageChat', this.groupName, message);
   }
 
   public deleteGroupMessages(groupName: string): Promise<string[]> {

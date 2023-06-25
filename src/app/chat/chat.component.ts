@@ -15,6 +15,9 @@ export class ChatComponent {
   newMessage: string = '';
   connectionId!: string | null;
 
+
+  selectedGroup: string | null = null;
+
   groupName!: string;
 
   connection!: signalR.HubConnection;
@@ -22,21 +25,22 @@ export class ChatComponent {
   constructor(private chatService: ChatService) { }
 
   ngOnInit() {
-    this.chatService.startConnection()
-      .then(() => {
-        this.chatService.getConnectionId()
-          .then(connectionId => {
-            console.log('Mi connectionId:', connectionId);
-          })
-          .catch(error => console.error(error));
-      })
-      .catch(error => console.error(error));
+    // this.chatService.startConnection()
+    //   .then(() => {
+    //     this.chatService.getConnectionId()
+    //       .then(connectionId => {
+    //         console.log('Mi connectionId:', connectionId);
+    //       })
+    //       .catch(error => console.error(error));
+    //   })
+    //  .catch(error => console.error(error));
 
     // Cargar los mensajes existentes del grupo
     this.chatService.onLoadMessages((messages: string[]) => {
       this.messages = messages;
     });
 
+    //carga los mensajes cuando llegan
     this.chatService.onReceiveMessage((messages: string[]) => {
       this.messages = messages;
     });
@@ -51,7 +55,7 @@ export class ChatComponent {
 
 
   sendMessage() {
-    this.chatService.sendMessage(this.groupName, this.newMessage)
+    this.chatService.sendMessage(this.newMessage)
       .then(() => {
         this.newMessage = ''
       })
