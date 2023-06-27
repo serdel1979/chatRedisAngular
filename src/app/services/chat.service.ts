@@ -32,7 +32,7 @@ export class ChatService {
 
   startConnection(): Promise<void> {
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl('https://localhost:7078/Hub/ChatHub')
+      .withUrl('https://chatredusdotnet-production.up.railway.app/Hub/ChatHub')
       .build();
 
     return this.connection.start()
